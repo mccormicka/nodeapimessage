@@ -97,7 +97,7 @@ module.exports.apiMessage = function apiMessage(mongoose, connection) {
  */
 module.exports.apiError = function apiError(mongoose, connection) {
 
-    var log = require('nodelogger');
+    var log = require('nodelogger')('APIError');
     var APIError = require('./lib/error/NodeAPIError')(mongoose, connection);
 
     return function (err, req, res, next) {
