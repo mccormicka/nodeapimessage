@@ -49,7 +49,7 @@ module.exports.isAPIMessage = function(api){
  * @returns {Function}
  */
 module.exports.apiMessage = function apiMessage(mongoose, connection) {
-
+    var log = require('nodelogger')('APIMessage');
     var APIMessage = require('./lib/success/NodeAPIMessage')(mongoose, connection);
     return function (req, res, next) {
         var api = validAPIMessage(req._apiMessage);
@@ -59,6 +59,7 @@ module.exports.apiMessage = function apiMessage(mongoose, connection) {
                     next(err);
                     return;
                 } else {
+                    log.debug(result);
                     module.exports.handleAPIResult(res, result);
                 }
             });
@@ -108,6 +109,7 @@ module.exports.apiError = function apiError(mongoose, connection) {
                     next(err);
                     return;
                 } else {
+                    log.error(result);
                     module.exports.handleAPIResult(res, result);
                 }
             });
