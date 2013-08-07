@@ -1,5 +1,6 @@
 'use strict';
 
+module.exports.Status = require('./lib/NodeAPIStatus');
 /**
  * You must initialize the APIMessages above any route calls.
  * app.use(apiMessage.initialize());
