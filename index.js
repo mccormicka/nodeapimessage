@@ -6,14 +6,20 @@ module.exports.Status = require('./lib/NodeAPIStatus');
  * app.use(apiMessage.initialize());
  * @returns {Function}
  */
-module.exports.initialize = function initialize(){
-    return function(req, res, next){
-        req.apiMessage = function(message, data, next){
-            if(module.exports.isAPIError(message)){
-                next({message:message, data:data});
+module.exports.initialize = function initialize() {
+    var log = require('nodelogger')('APIMessage');
+    return function (req, res, next) {
+        req.apiMessage = function (message, data, next) {
+            if(typeof next !== 'function'){
+                log.error('-------------------------------------------------------------------');
+                log.error('::: YOU MUST PASS A FUNCTION AS THE LAST ARGUMENT TO APIMESSAGE :::');
+                log.error('-------------------------------------------------------------------');
+            }
+            if (module.exports.isAPIError(message)) {
+                next({message: message, data: data});
                 return;
-            }else if(module.exports.isAPIMessage(message)){
-                req._apiMessage = {message:message, data:data};
+            } else if (module.exports.isAPIMessage(message)) {
+                req._apiMessage = {message: message, data: data};
             }
             next();
         };
@@ -26,7 +32,7 @@ module.exports.initialize = function initialize(){
  * @param api
  * @returns {*|boolean}
  */
-module.exports.isAPIError = function(api){
+module.exports.isAPIError = function (api) {
     return api && api.indexOf('api.error.') !== -1;
 };
 
@@ -35,7 +41,7 @@ module.exports.isAPIError = function(api){
  * @param api
  * @returns {*|boolean}
  */
-module.exports.isAPIMessage = function(api){
+module.exports.isAPIMessage = function (api) {
     return api && api.indexOf('api.success.') !== -1;
 };
 
@@ -146,12 +152,18 @@ module.exports.apiError = function apiError(mongoose, connection) {
  */
 module.exports.handleAPIResult = function handleAPIResult(res, result) {
     res.status(result.status);
-    res.format({
-        html: function () {
-            res.send(result);
-        },
-        json: function () {
-            res.json(result);
-        }
-    });
+    if (result.key === 'api.success.render') {
+        res.render(
+            typeof result.data === 'string' ? result.data :
+            result.data.page, result.data.data);
+    } else {
+        res.format({
+            html: function () {
+                res.send(result);
+            },
+            json: function () {
+                res.json(result);
+            }
+        });
+    }
 };
