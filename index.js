@@ -159,7 +159,7 @@ module.exports.handleAPIResult = function handleAPIResult(res, result) {
     } else {
         res.format({
             html: function () {
-                res.send(result);
+                res.html(result);
             },
             json: function () {
                 res.json(result);
