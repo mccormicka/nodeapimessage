@@ -48,16 +48,15 @@ module.exports.isAPIMessage = function (api) {
 /**
  * Handles APIMessages you should initialize this method in
  * your application after your router and before any error handlers.
- * You need to pass in an instance of Mongoose as well as the connection
+ * You need to pass in an instance of the connection
  * you will be using for messages.
- * app.use(apiMessage.apiMessage(mongoose, connection);
- * @param mongoose
+ * app.use(apiMessage.apiMessage(connection);
  * @param connection
  * @returns {Function}
  */
-module.exports.apiMessage = function apiMessage(mongoose, connection) {
+module.exports.apiMessage = function apiMessage(connection) {
     var log = require('nodelogger')('APIMessage');
-    var APIMessage = require('./lib/success/NodeAPIMessage')(mongoose, connection);
+    var APIMessage = require('./lib/success/NodeAPIMessage')(connection);
     return function (req, res, next) {
         var api = validAPIMessage(req._apiMessage);
         if (isAPIMessage(api)) {
@@ -96,17 +95,16 @@ module.exports.apiMessage = function apiMessage(mongoose, connection) {
 /**
  * Handles APIErrors you should initialize this method in
  * your application after your router and after any message handlers.
- * You need to pass in an instance of Mongoose as well as the connection
+ * You need to pass in an instance of the connection
  * you will be using for messages.
- * app.use(apiMessage.apiMessage(mongoose, connection);
- * @param mongoose
+ * app.use(apiMessage.apiMessage(connection);
  * @param connection
  * @returns {Function}
  */
-module.exports.apiError = function apiError(mongoose, connection) {
+module.exports.apiError = function apiError(connection) {
 
     var log = require('nodelogger')('APIError');
-    var APIError = require('./lib/error/NodeAPIError')(mongoose, connection);
+    var APIError = require('./lib/error/NodeAPIError')(connection);
 
     return function (err, req, res, next) {
         var error = validApiError(err);
