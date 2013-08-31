@@ -10,7 +10,7 @@ module.exports.initialize = function initialize() {
     var log = require('nodelogger')('APIMessage');
     return function (req, res, next) {
         req.apiMessage = function (message, data, next) {
-            if(typeof next !== 'function'){
+            if (typeof next !== 'function') {
                 log.error('-------------------------------------------------------------------');
                 log.error('::: YOU MUST PASS A FUNCTION AS THE LAST ARGUMENT TO APIMESSAGE :::');
                 log.error('-------------------------------------------------------------------');
@@ -66,7 +66,7 @@ module.exports.apiMessage = function apiMessage(connection) {
                     return;
                 } else {
                     log.debug(result);
-                    module.exports.handleAPIResult(res, result);
+                    module.exports.handleAPIResult(req, res, result);
                 }
             });
         } else {
@@ -115,7 +115,7 @@ module.exports.apiError = function apiError(connection) {
                     return;
                 } else {
                     log.error(result);
-                    module.exports.handleAPIResult(res, result);
+                    module.exports.handleAPIResult(req, res, result);
                 }
             });
         } else {
@@ -148,20 +148,14 @@ module.exports.apiError = function apiError(connection) {
  * @param result
  * @private
  */
-module.exports.handleAPIResult = function handleAPIResult(res, result) {
+module.exports.handleAPIResult = function handleAPIResult(req, res, result) {
     res.status(result.status);
-    if (result.key === 'api.success.render') {
-        res.render(
-            typeof result.data === 'string' ? result.data :
-            result.data.page, result.data.data);
-    } else {
-        res.format({
-            html: function () {
-                res.send(result);
-            },
-            json: function () {
-                res.json(result);
-            }
-        });
-    }
+    res.format({
+        html: function () {
+            res.send(result);
+        },
+        json: function () {
+            res.json(result);
+        }
+    });
 };
