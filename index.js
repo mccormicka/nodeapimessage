@@ -1,161 +1,67 @@
 'use strict';
 
+var log = require('nodelogger')('APIMessage');
+var db;
+
+//-------------------------------------------------------------------------
+//
+// Public API
+//
+//-------------------------------------------------------------------------
+
 module.exports.Status = require('./lib/NodeAPIStatus');
-/**
- * You must initialize the APIMessages above any route calls.
- * app.use(apiMessage.initialize());
- * @returns {Function}
- */
-module.exports.initialize = function initialize() {
-    var log = require('nodelogger')('APIMessage');
+
+module.exports.initialize = function initialize(database) {
+    if (!database) {
+        throw new Error('You must supply a database instance to work with NodeApiMessage');
+    }
+    db = database;
+    module.exports.APIMessage = require('./lib/NodeAPIMessage')(database);
     return function (req, res, next) {
-        req.apiMessage = function (message, data, next) {
-            if (typeof next !== 'function') {
-                log.error('-------------------------------------------------------------------');
-                log.error('::: YOU MUST PASS A FUNCTION AS THE LAST ARGUMENT TO APIMESSAGE :::');
-                log.error('-------------------------------------------------------------------');
-            }
-            if (module.exports.isAPIError(message)) {
-                next({message: message, data: data});
-                return;
-            } else if (module.exports.isAPIMessage(message)) {
-                req._apiMessage = {message: message, data: data};
-            }
-            next();
+
+        res.apiMessage = function (status, message, data, options) {
+            module.exports.sendApiResponse(this, status, message, data, options);
         };
         next();
     };
 };
 
-/**
- * Is passed in message an api error message?
- * @param api
- * @returns {*|boolean}
- */
-module.exports.isAPIError = function (api) {
-    return api && api.indexOf('api.error.') !== -1;
-};
-
-/**
- * Is the passed in message an api message?
- * @param api
- * @returns {*|boolean}
- */
-module.exports.isAPIMessage = function (api) {
-    return api && api.indexOf('api.success.') !== -1;
-};
-
-/**
- * Handles APIMessages you should initialize this method in
- * your application after your router and before any error handlers.
- * You need to pass in an instance of the connection
- * you will be using for messages.
- * app.use(apiMessage.apiMessage(connection);
- * @param connection
- * @returns {Function}
- */
-module.exports.apiMessage = function apiMessage(connection) {
-    var log = require('nodelogger')('APIMessage');
-    var APIMessage = require('./lib/success/NodeAPIMessage')(connection);
-    return function (req, res, next) {
-        var api = validAPIMessage(req._apiMessage);
-        if (isAPIMessage(api)) {
-            APIMessage.response(api.message, api.data, function (err, result) {
-                if (err) {
-                    next(err);
-                    return;
-                } else {
-                    log.debug(result);
-                    module.exports.handleAPIResult(req, res, result);
-                }
-            });
-        } else {
-            next();
-        }
-    };
-
-    //-------------------------------------------------------------------------
-    //
-    // Private Methods
-    //
-    //-------------------------------------------------------------------------
-
-    function validAPIMessage(message) {
-        if (typeof message === 'string') {
-            message = {message: message};
-        }
-        return message;
+module.exports.apiMessageHandler = function (err, req, res, next) {
+    if (!db) {
+        throw new Error('You must initialize with a database instance to work with NodeApiMessage');
     }
-
-    function isAPIMessage(api) {
-        return api && api.message && api.message.indexOf('api.success') !== -1;
+    if (err) {
+        module.exports.sendApiResponse(res, module.exports.Status.INTERNAL_SERVER_ERROR, err, err);
+    } else {
+        next();
     }
 };
 
-/**
- * Handles APIErrors you should initialize this method in
- * your application after your router and after any message handlers.
- * You need to pass in an instance of the connection
- * you will be using for messages.
- * app.use(apiMessage.apiMessage(connection);
- * @param connection
- * @returns {Function}
- */
-module.exports.apiError = function apiError(connection) {
-
-    var log = require('nodelogger')('APIError');
-    var APIError = require('./lib/error/NodeAPIError')(connection);
-
-    return function (err, req, res, next) {
-        var error = validApiError(err);
-        if (isAPIError(error)) {
-            APIError.response(error.message, error.data, function (err, result) {
-                if (err) {
-                    next(err);
-                    return;
-                } else {
-                    log.error(result);
-                    module.exports.handleAPIResult(req, res, result);
-                }
-            });
-        } else {
-            log.error('Error not handled by API ERRORS!!', err);
-            next(err);
+module.exports.sendApiResponse = function sendApiResponse(res, status, message, data, options) {
+    options = options;//Stop JSHint
+    module.exports.APIMessage.response(status, message, data, function (err, result) {
+        if(isErrorCode(status) || err){
+            log.error(err|| result);
         }
-    };
-
-    //-------------------------------------------------------------------------
-    //
-    // Private Methods
-    //
-    //-------------------------------------------------------------------------
-
-    function validApiError(err) {
-        if (typeof err === 'string') {
-            err = {message: err};
-        }
-        return err;
-    }
-
-    function isAPIError(err) {
-        return err.message && err.message.indexOf('api.error') !== -1;
-    }
-};
-
-/**
- * Handles the api response.
- * @param res
- * @param result
- * @private
- */
-module.exports.handleAPIResult = function handleAPIResult(req, res, result) {
-    res.status(result.status);
-    res.format({
-        html: function () {
-            res.send(result);
-        },
-        json: function () {
-            res.json(result);
-        }
+        res.status(result.status);
+        res.format({
+            html: function () {
+                res.send(result);
+            },
+            json: function () {
+                res.json(result);
+            }
+        });
+        res.end();
     });
 };
+
+//-------------------------------------------------------------------------
+//
+// Private Methods
+//
+//-------------------------------------------------------------------------
+
+function isErrorCode(status) {
+    return status >= 500;
+}
