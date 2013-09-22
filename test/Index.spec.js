@@ -92,10 +92,9 @@ describe('NodeAPIMessage Tests', function () {
                         delete data._id;
                         expect(data).toEqual(
                             {
-                                data: 'Some bloody error!',
                                 code: 5000000,
                                 status: 500,
-                                message: 'Some bloody error!',
+                                message: 'Internal server error!',
                                 href: '/apimessages/5000000',
                                 type: 'apimessage'
                             });
@@ -137,40 +136,43 @@ describe('NodeAPIMessage Tests', function () {
             var middleware = TestClass.initialize(connection);
             var req = {};
             var res = {
-                status:function(){},
-                format:function(){},
-                send:function(){},
-                end:function(){}
+                status: function () {
+                },
+                format: function (value) {
+                    value.html();
+                },
+                send: function () {
+                }
             };
-            spyOn(res, 'end').andCallFake(function(){
-                TestClass.APIMessage.findOne({message:'something awesome happened'}, function(err, result){
-                    if(result){
+            spyOn(res, 'send').andCallFake(function () {
+                TestClass.APIMessage.findOne({message: 'something awesome happened'}, function (err, result) {
+                    if (result) {
                         expect(result.status).toBe(Status.OK);
                         //Data should not be saved to the database as it can change
                         //on each request
-                        expect(result.data).not.toBe({my:'data'});
+                        expect(result.data).not.toBe({my: 'data'});
                         done(err);
-                    }else{
+                    } else {
                         done('Error creating and finding api message');
                     }
                 });
             });
-            middleware(req, res, function(){ });
-            res.apiMessage(Status.OK, 'something awesome happened', {my:'data'});
+            middleware(req, res, function () {
+            });
+            res.apiMessage(Status.OK, 'something awesome happened', {my: 'data'});
         });
-
 
         it('Padd out error codes small count (1)', function (done) {
             TestClass.initialize(connection);
             var APIMessage = TestClass.APIMessage;
-            spyOn(APIMessage, 'count').andCallFake(function(query, next){
+            spyOn(APIMessage, 'count').andCallFake(function (query, next) {
                 next(null, 1);
             });
-            APIMessage.response(Status.OK, 'something', null, function(err, result){
-                if(result){
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
                     expect(result.code).toBe(2000001);
                     done(err);
-                }else{
+                } else {
                     done('Error creating api message');
                 }
             });
@@ -179,14 +181,14 @@ describe('NodeAPIMessage Tests', function () {
         it('Padd out error codes medium count (555)', function (done) {
             TestClass.initialize(connection);
             var APIMessage = TestClass.APIMessage;
-            spyOn(APIMessage, 'count').andCallFake(function(query, next){
+            spyOn(APIMessage, 'count').andCallFake(function (query, next) {
                 next(null, 555);
             });
-            APIMessage.response(Status.OK, 'something', null, function(err, result){
-                if(result){
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
                     expect(result.code).toBe(2000555);
                     done(err);
-                }else{
+                } else {
                     done('Error creating api message');
                 }
             });
@@ -195,14 +197,14 @@ describe('NodeAPIMessage Tests', function () {
         it('Padd out error codes large count (9999)', function (done) {
             TestClass.initialize(connection);
             var APIMessage = TestClass.APIMessage;
-            spyOn(APIMessage, 'count').andCallFake(function(query, next){
+            spyOn(APIMessage, 'count').andCallFake(function (query, next) {
                 next(null, 9999);
             });
-            APIMessage.response(Status.OK, 'something', null, function(err, result){
-                if(result){
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
                     expect(result.code).toBe(2009999);
                     done(err);
-                }else{
+                } else {
                     done('Error creating api message');
                 }
             });

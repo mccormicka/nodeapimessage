@@ -31,7 +31,8 @@ module.exports.apiMessageHandler = function (err, req, res, next) {
         throw new Error('You must initialize with a database instance to work with NodeApiMessage');
     }
     if (err) {
-        module.exports.sendApiResponse(res, module.exports.Status.INTERNAL_SERVER_ERROR, err, err);
+        log.error('Unhandled Server error!!!', req, res, err );
+        module.exports.sendApiResponse(res, module.exports.Status.INTERNAL_SERVER_ERROR, 'Internal server error!');
     } else {
         next();
     }
@@ -52,7 +53,6 @@ module.exports.sendApiResponse = function sendApiResponse(res, status, message, 
                 res.json(result);
             }
         });
-        res.end();
     });
 };
 
