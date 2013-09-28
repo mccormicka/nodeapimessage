@@ -34,8 +34,8 @@
   },
   "devDependencies": {
     "grunt": "0.4.1",
-    "mockgoose": "~0.0.16",
-      "jasmine-node": "https://github.com/mccormicka/jasmine-node/archive/exclusive-tests.tar.gz",
+    "mockgoose": "~0.2.2",
+    "jasmine-node": "https://github.com/mccormicka/jasmine-node/archive/exclusive-tests.tar.gz",
     "grunt-contrib-watch": "0.3.1",
     "grunt-contrib-jshint": "0.4.3",
     "grunt-jasmine-node": "~0.1.0",

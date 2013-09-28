@@ -209,5 +209,41 @@ describe('NodeAPIMessage Tests', function () {
                 }
             });
         });
+
+        it('Return a different apimessage if status/message combination is different', function (done) {
+            TestClass.initialize(connection);
+            var APIMessage = TestClass.APIMessage;
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
+                    expect(result.code).toBe(2000000);
+                    expect(result.message).toBe('something');
+                    APIMessage.response(Status.OK, 'new message', null, function(err, result){
+                        expect(result.code).toBe(2000001);
+                        expect(result.message).toBe('new message');
+                        done(err);
+                    });
+                } else {
+                    done('Error creating api message');
+                }
+            });
+        });
+
+        iit('Return the same apimessage if status/message combination is same', function (done) {
+            TestClass.initialize(connection);
+            var APIMessage = TestClass.APIMessage;
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
+                    expect(result.code).toBe(2000000);
+                    expect(result.message).toBe('something');
+                    APIMessage.response(Status.OK, 'something', null, function(err, result){
+                        expect(result.code).toBe(2000000);
+                        expect(result.message).toBe('something');
+                        done(err);
+                    });
+                } else {
+                    done('Error creating api message');
+                }
+            });
+        });
     });
 });
