@@ -210,6 +210,27 @@ describe('NodeAPIMessage Tests', function () {
             });
         });
 
+        it('Only increment count number for current status when adding new apiMessage', function (done) {
+            TestClass.initialize(connection);
+            var APIMessage = TestClass.APIMessage;
+            APIMessage.response(Status.OK, 'something', null, function (err, result) {
+                if (result) {
+                    expect(result.code).toBe(2000000);
+                    APIMessage.response(Status.UNAUTHORIZED, 'something', null, function (err, result) {
+                        if (result) {
+                            expect(result.code).toBe(4010000);
+                            done(err);
+                        }else{
+                            done('Error creating api message');
+                        }
+                    });
+                } else {
+                    done('Error creating api message');
+                }
+            });
+        });
+
+
         it('Return a different apimessage if status/message combination is different', function (done) {
             TestClass.initialize(connection);
             var APIMessage = TestClass.APIMessage;
@@ -228,7 +249,7 @@ describe('NodeAPIMessage Tests', function () {
             });
         });
 
-        iit('Return the same apimessage if status/message combination is same', function (done) {
+        it('Return the same apimessage if status/message combination is same', function (done) {
             TestClass.initialize(connection);
             var APIMessage = TestClass.APIMessage;
             APIMessage.response(Status.OK, 'something', null, function (err, result) {
