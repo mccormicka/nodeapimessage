@@ -4,7 +4,7 @@ describe('NodeAPIMessage Tests', function () {
 
     var TestClass = require('../index');
     var Status = require('../lib/NodeAPIStatus');
-    var mockgoose = require('Mockgoose');
+    var mockgoose = require('mockgoose');
     var mongoose = require('mongoose');
 
     mockgoose(mongoose);
