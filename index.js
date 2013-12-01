@@ -1,6 +1,6 @@
 'use strict';
 
-var log = require('nodelogger').Logger(__filename);
+var log = require('./lib/Logger');
 var db;
 
 //-------------------------------------------------------------------------

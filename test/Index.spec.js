@@ -54,6 +54,7 @@ describe('NodeAPIMessage Tests', function () {
                     if (result) {
                         var data = JSON.parse(result.text);
                         delete data._id;
+                        delete data.__v;
                         expect(data).toEqual(
                             {
                                 data: { one: 'two' },
@@ -90,6 +91,7 @@ describe('NodeAPIMessage Tests', function () {
                         expect(result.status).toBe(500);
                         var data = JSON.parse(result.text);
                         delete data._id;
+                        delete data.__v;
                         expect(data).toEqual(
                             {
                                 code: 5000000,
